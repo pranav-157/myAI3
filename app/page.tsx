@@ -48,7 +48,7 @@ type StoragePayload = {
 const SUGGESTIONS: string[] = [
   "Curate a quiet-luxury 2–3 day Jaipur itinerary with palace-like hotel options",
   "Recommend exquisite dining experiences in Jaipur that one should visit",
-  "Design elegant outfits for a Jaipur trip — day sightseeing, palace dinner, and resort lounging",
+  "Help me choose the right car for a smooth, comfortable trip to Jaipur’s forts",
   "Suggest some designer boutiques or gift shops to visit before leaving Jaipur",
 ];
 
