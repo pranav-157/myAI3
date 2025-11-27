@@ -16,27 +16,12 @@ export const generateImage = tool({
       .describe("A clear, detailed description of the image to generate."),
     size: z
       .enum(["1024x1024", "512x512"])
-      .default("1024x1024")
       .describe("Image size.")
       .optional(),
   }),
-  execute: async ({ prompt, size }) => {
+  execute: async ({ prompt, size }: { prompt: string; size?: "1024x1024" | "512x512" }) => {
     const response = await openai.images.generate({
       model: "gpt-image-1",
       prompt,
       size: size ?? "1024x1024",
       n: 1,
-    });
-
-    const url = response.data[0]?.url;
-    if (!url) {
-      throw new Error("No image URL returned from OpenAI.");
-    }
-
-    // The model will see this object as the tool result and can decide
-    // how to present it (e.g. paste the URL or embed as markdown).
-    return {
-      imageUrl: url,
-    };
-  },
-});
