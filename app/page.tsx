@@ -190,49 +190,55 @@ export default function Chat() {
                 <ChatHeaderBlock />
 
                 <ChatHeaderBlock className="flex-col items-center justify-center gap-1">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="size-8 ring-1 ring-[#C9B68A]/70">
-                      <AvatarImage src="/logo.png" />
-                      <AvatarFallback>
-                        <Image
-                          src="/logo.png"
-                          alt="Logo"
-                          width={32}
-                          height={32}
-                        />
-                      </AvatarFallback>
-                    </Avatar>
+  <div className="flex items-center gap-3">
+    <Avatar className="size-8 ring-1 ring-[#C9B68A]/70">
+      <AvatarImage src="/logo.png" />
+      <AvatarFallback>
+        <Image
+          src="/logo.png"
+          alt="Logo"
+          width={32}
+          height={32}
+        />
+      </AvatarFallback>
+    </Avatar>
 
-                    <p className="text-sm font-medium tracking-tight text-zinc-100">
-                      {AI_NAME}
-                    </p>
-                  </div>
+    {/* Aurelian name */}
+    <h1 className="text-xl sm:text-2xl font-semibold tracking-[0.04em] text-zinc-100">
+      {AI_NAME}
+    </h1>
+  </div>
 
-                  <p
-                    className="
-                      uppercase text-[11px]
-                      tracking-[0.22em]
-                      text-zinc-200 
-                      drop-shadow-[0_0_4px_rgba(0,0,0,0.6)]
-                      whitespace-pre text-center
-                    "
-                  >
-                    QUIET LUXURY · TRAVEL & LIFESTYLE CONCIERGE
-                  </p>
-                  {/* NEW SMALL SUBTEXT LINE */}
-                  <p
-                    className="
-                      text-[10px]
-                      text-zinc-400/70
-                      italic
-                      tracking-wide
-                      -mt-1
-                      text-center
-                    "
-                  >
-                    (currently specialised in Jaipur’s finest)
-                  </p>
-                </ChatHeaderBlock>
+  {/* Tagline */}
+  <p
+    className="
+      uppercase
+      text-xs sm:text-sm
+      tracking-[0.28em]
+      text-zinc-200 
+      drop-shadow-[0_0_4px_rgba(0,0,0,0.6)]
+      whitespace-pre text-center
+      mt-1
+    "
+  >
+    QUIET LUXURY · TRAVEL & LIFESTYLE CONCIERGE
+  </p>
+
+  {/* NEW SMALL SUBTEXT LINE */}
+  <p
+    className="
+      text-[11px]
+      text-zinc-400/70
+      italic
+      tracking-wide
+      mt-1
+      text-center
+    "
+  >
+    (currently specialised in Jaipur’s finest)
+  </p>
+</ChatHeaderBlock>
+
 
                 <ChatHeaderBlock className="justify-end">
                   <Button
