@@ -265,31 +265,42 @@ export default function Chat() {
               "
             >
               {/* Suggested prompts (empty state) */}
-              {!hasUserMessage && (
-                <div className="mb-5 grid gap-3 sm:grid-cols-2">
-                  {SUGGESTIONS.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => {
-                        form.setValue("message", s);
-                        form.handleSubmit(onSubmit)();
-                      }}
-                      className="
-                        text-left rounded-2xl 
-                        border border-zinc-700/80 
-                        bg-zinc-900/80 px-4 py-3 
-                        text-sm text-zinc-200 
-                        hover:border-[#C9B68A]/70 
-                        hover:bg-zinc-900 
-                        transition-colors
-                      "
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              )}
+{!hasUserMessage && (
+  <div className="mb-5">
+    
+    {/* Subtle Title */}
+    <p className="text-[10px] tracking-wider uppercase text-zinc-500 mb-2 pl-1 opacity-80">
+      suggested prompts
+    </p>
+
+    {/* Grid of suggestions */}
+    <div className="grid gap-3 sm:grid-cols-2">
+      {SUGGESTIONS.map((s) => (
+        <button
+          key={s}
+          type="button"
+          onClick={() => {
+            form.setValue("message", s);
+            form.handleSubmit(onSubmit)();
+          }}
+          className="
+            text-left rounded-2xl 
+            border border-zinc-700/80 
+            bg-zinc-900/80 px-4 py-3 
+            text-sm text-zinc-200 
+            hover:border-[#C9B68A]/70 
+            hover:bg-zinc-900 
+            transition-colors
+          "
+        >
+          {s}
+        </button>
+      ))}
+    </div>
+
+  </div>
+)}
+
 
               {/* Messages */}
               {isClient ? (
