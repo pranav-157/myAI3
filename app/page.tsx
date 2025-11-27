@@ -251,7 +251,7 @@ export default function Chat() {
         </div>
 
         {/* CHAT AREA */}
-        <div className="h-screen overflow-y-auto w-full px-5 pt-[96px] pb-[180px] py-4">
+        <div className="h-screen overflow-y-auto w-full px-5 pt-[140px] pb-[180px] py-4">
           <div className="flex justify-center min-h-full">
             <div
               className="
