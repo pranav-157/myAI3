@@ -6,11 +6,7 @@ import { toast } from "sonner";
 import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useChat } from "@ai-sdk/react";
 import { ArrowUp, Loader2, Plus, Square } from "lucide-react";
@@ -22,7 +18,6 @@ import { useEffect, useState, useRef } from "react";
 import { AI_NAME, CLEAR_CHAT_TEXT, OWNER_NAME, WELCOME_MESSAGE } from "@/config";
 import Image from "next/image";
 import Link from "next/link";
-
 
 // ------------------ SCHEMA ------------------
 
@@ -39,7 +34,6 @@ type StorageData = {
   messages: UIMessage[];
   durations: Record<string, number>;
 };
-
 
 // ------------------ LOCAL STORAGE ------------------
 
@@ -76,7 +70,6 @@ const saveMessagesToStorage = (
     console.error("Failed to save messages to localStorage:", error);
   }
 };
-
 
 // ------------------ MAIN COMPONENT ------------------
 
@@ -116,7 +109,6 @@ export default function Chat() {
     });
   };
 
-
   // Welcome message injection
   useEffect(() => {
     if (
@@ -141,7 +133,6 @@ export default function Chat() {
     }
   }, [isClient, initialMessages.length, setMessages]);
 
-
   // Form handling
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -164,58 +155,61 @@ export default function Chat() {
     toast.success("Chat cleared");
   }
 
-
   // ------------------ UI ------------------
 
   return (
     <div className="flex h-screen justify-center items-center font-sans bg-[#050509] text-zinc-100">
       <main className="w-full h-screen relative">
-
         {/* ------------------ HEADER ------------------ */}
         <div className="fixed top-0 left-0 right-0 z-50">
-          <ChatHeader className="mx-auto max-w-4xl px-4 py-3 rounded-b-2xl border border-zinc-800/70 bg-black/80 backdrop-blur-xl shadow-[0_12px_26px_rgba(0,0,0,0.65)]">
-            
-            <ChatHeaderBlock />
+          <div className="mx-auto max-w-4xl px-4">
+            <div className="mt-3 rounded-b-2xl border border-zinc-800/70 bg-black/80 backdrop-blur-xl shadow-[0_12px_26px_rgba(0,0,0,0.65)]">
+              <ChatHeader>
+                <ChatHeaderBlock />
 
-            <ChatHeaderBlock className="flex-col items-center justify-center gap-1">
-              <div className="flex items-center gap-2">
-                <Avatar className="size-8 ring-1 ring-[#C9B68A]/50">
-                  <AvatarImage src="/logo.png" />
-                  <AvatarFallback>
-                    <Image src="/logo.png" alt="Logo" width={32} height={32} />
-                  </AvatarFallback>
-                </Avatar>
-                <p className="tracking-tight text-sm font-medium text-zinc-100">
-                  {AI_NAME}
-                </p>
-              </div>
+                <ChatHeaderBlock className="flex-col items-center justify-center gap-1">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="size-8 ring-1 ring-[#C9B68A]/50">
+                      <AvatarImage src="/logo.png" />
+                      <AvatarFallback>
+                        <Image
+                          src="/logo.png"
+                          alt="Logo"
+                          width={32}
+                          height={32}
+                        />
+                      </AvatarFallback>
+                    </Avatar>
+                    <p className="tracking-tight text-sm font-medium text-zinc-100">
+                      {AI_NAME}
+                    </p>
+                  </div>
 
-              <p className="uppercase text-[10px] tracking-[0.20em] text-zinc-500">
-                Quiet Luxury · Travel & Lifestyle Concierge
-              </p>
-            </ChatHeaderBlock>
+                  <p className="uppercase text-[10px] tracking-[0.20em] text-zinc-500">
+                    Quiet Luxury · Travel & Lifestyle Concierge
+                  </p>
+                </ChatHeaderBlock>
 
-            <ChatHeaderBlock className="justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                className="cursor-pointer border-zinc-700 bg-black/40 hover:bg-zinc-900/70 text-xs text-zinc-200"
-                onClick={clearChat}
-              >
-                <Plus className="size-3 mr-1" />
-                {CLEAR_CHAT_TEXT}
-              </Button>
-            </ChatHeaderBlock>
-
-          </ChatHeader>
+                <ChatHeaderBlock className="justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="cursor-pointer border-zinc-700 bg-black/40 hover:bg-zinc-900/70 text-xs text-zinc-200"
+                    onClick={clearChat}
+                  >
+                    <Plus className="size-3 mr-1" />
+                    {CLEAR_CHAT_TEXT}
+                  </Button>
+                </ChatHeaderBlock>
+              </ChatHeader>
+            </div>
+          </div>
         </div>
-
 
         {/* ------------------ CHAT AREA ------------------ */}
         <div className="h-screen overflow-y-auto w-full px-5 pt-[96px] pb-[180px] py-4">
           <div className="flex justify-center min-h-full">
             <div className="flex flex-col items-stretch justify-end w-full max-w-3xl rounded-3xl bg-black/65 border border-zinc-800/70 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.55)] px-5 py-6">
-
               {isClient ? (
                 <>
                   <MessageWall
@@ -236,17 +230,14 @@ export default function Chat() {
                   <Loader2 className="size-4 animate-spin text-zinc-500" />
                 </div>
               )}
-
             </div>
           </div>
         </div>
-
 
         {/* ------------------ INPUT BAR ------------------ */}
         <div className="fixed bottom-0 left-0 right-0 z-50 pb-3">
           <div className="w-full px-5 flex justify-center">
             <div className="relative w-full max-w-3xl">
-
               <div className="pointer-events-none absolute inset-x-8 -top-12 h-20 bg-[radial-gradient(circle_at_top,rgba(201,182,138,0.14),transparent)]" />
 
               <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -303,7 +294,6 @@ export default function Chat() {
             </div>
           </div>
 
-
           {/* ------------------ FOOTER ------------------ */}
           <div className="w-full px-5 mt-2 text-[11px] text-zinc-500 flex justify-center">
             <span>© {new Date().getFullYear()} {OWNER_NAME}</span>
@@ -314,13 +304,15 @@ export default function Chat() {
             <span className="mx-1">·</span>
             <span>
               Powered by{" "}
-              <Link href="https://ringel.ai/" className="underline underline-offset-2">
+              <Link
+                href="https://ringel.ai/"
+                className="underline underline-offset-2"
+              >
                 Ringel.AI
               </Link>
             </span>
           </div>
         </div>
-
       </main>
     </div>
   );
