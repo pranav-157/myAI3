@@ -267,6 +267,15 @@ export default function Chat() {
               {/* Suggested prompts (empty state) */}
 {!hasUserMessage && (
   <div className="mb-5">
+    {/* WELCOME NOTE — WITHOUT THE SUBTEXT */}
+      <div className="text-center mb-6">
+        <h2 className="text-xl font-semibold text-zinc-100">
+          Welcome to Aurelian
+        </h2>
+        <p className="text-sm text-zinc-300 mt-1 leading-relaxed">
+         I'm Aurelian — here to curate your Jaipur stay end-to-end: where you stay, how you travel, what you wear, what you taste, and what you take home. Tell me your preferences, and I'll tailor everything with precision.
+        </p>
+      </div>
     
     {/* Subtle Title */}
     <p className="text-[10px] tracking-wider uppercase text-zinc-500 mb-2 pl-1 opacity-80">
