@@ -219,6 +219,19 @@ export default function Chat() {
                   >
                     QUIET LUXURY · TRAVEL & LIFESTYLE CONCIERGE
                   </p>
+                  {/* NEW SMALL SUBTEXT LINE */}
+                  <p
+                    className="
+                      text-[10px]
+                      text-zinc-400/70
+                      italic
+                      tracking-wide
+                      -mt-1
+                      text-center
+                    "
+                  >
+                    (currently specialised in Jaipur’s finest)
+                  </p>
                 </ChatHeaderBlock>
 
                 <ChatHeaderBlock className="justify-end">
