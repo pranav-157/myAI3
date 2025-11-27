@@ -46,10 +46,10 @@ type StoragePayload = {
 ------------------------------------------------------------ */
 
 const SUGGESTIONS: string[] = [
-  "Plan a 3-day quiet-luxury trip in Jaipur with two hotel options",
-  "Create a luxury weekend in Udaipur with one palace hotel",
-  "Find a private-pool villa within 2 hours of Delhi",
-  "Recommend boutique hotels in Goa that feel intimate, not touristy",
+  "Curate a quiet-luxury 2–3 day Jaipur itinerary with palace-like hotel options",
+  "Recommend exquisite dining experiences in Jaipur that one should visit",
+  "Design elegant outfits for a Jaipur trip — day sightseeing, palace dinner, and resort lounging",
+  "Suggest some designer boutiques or gift shops to visit before leaving Jaipur",
 ];
 
 /* ------------------------------------------------------------
