@@ -172,7 +172,7 @@ export default function Chat() {
   ------------------------------------------------------------ */
 
   return (
-    <div className="flex h-screen justify-center items-center font-sans bg-[#050509] text-zinc-100">
+    <div className="flex h-screen justify-center items-center font-sans bg-[#202029] text-zinc-100">
       <main className="w-full h-screen relative">
         {/* HEADER */}
         <div className="fixed top-0 left-0 right-0 z-50">
