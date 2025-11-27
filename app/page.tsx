@@ -38,6 +38,17 @@ type StorageData = {
 };
 
 /* ------------------------------------------------------------
+   SUGGESTED PROMPTS (for empty-state cards)
+------------------------------------------------------------ */
+
+const SUGGESTIONS: string[] = [
+  "Plan a 3-day quiet-luxury stay in Jaipur with one palace hotel and one boutique property.",
+  "Curate 3 hotel + outfit pairings for a business trip to Mumbai with evening cocktails.",
+  "Design a weekend escape within 2 hours of Delhi with a private pool and late checkout.",
+  "Suggest 4 dinner spots in Jaipur that feel intimate, not touristy, with great wine lists.",
+];
+
+/* ------------------------------------------------------------
    LOCAL STORAGE HELPERS
 ------------------------------------------------------------ */
 
@@ -112,6 +123,8 @@ export default function Chat() {
     setDurations((prev) => ({ ...prev, [key]: duration }));
   };
 
+  const hasUserMessage = messages.some((m) => m.role === "user");
+
   /* ----------------------------------------------
      Inject Welcome Message
   ---------------------------------------------- */
@@ -168,7 +181,6 @@ export default function Chat() {
           <div className="mx-auto max-w-4xl px-4">
             <div className="mt-3 rounded-b-2xl border border-zinc-800/70 bg-black/80 backdrop-blur-xl shadow-[0_12px_26px_rgba(0,0,0,0.65)]">
               <ChatHeader>
-
                 <ChatHeaderBlock />
 
                 <ChatHeaderBlock className="flex-col items-center justify-center gap-1">
@@ -190,7 +202,7 @@ export default function Chat() {
                     </p>
                   </div>
 
-                  <p className="uppercase text-[11px] tracking-[0.24em] text-zinc-200 drop-shadow-[0_0_4px_rgba(0,0,0,0.6)]">
+                  <p className="uppercase text-[10px] md:text-[11px] tracking-[0.16em] md:tracking-[0.22em] text-zinc-200 drop-shadow-[0_0_4px_rgba(0,0,0,0.6)] whitespace-nowrap md:whitespace-normal text-center">
                     Quiet Luxury · Travel & Lifestyle Concierge
                   </p>
                 </ChatHeaderBlock>
@@ -206,7 +218,6 @@ export default function Chat() {
                     {CLEAR_CHAT_TEXT}
                   </Button>
                 </ChatHeaderBlock>
-
               </ChatHeader>
             </div>
           </div>
@@ -216,6 +227,25 @@ export default function Chat() {
         <div className="h-screen overflow-y-auto w-full px-5 pt-[96px] pb-[180px] py-4">
           <div className="flex justify-center min-h-full">
             <div className="flex flex-col w-full max-w-3xl rounded-3xl bg-black/65 border border-zinc-800/70 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.55)] px-5 py-6">
+
+              {/* Suggested cards only before the first user message */}
+              {!hasUserMessage && (
+                <div className="mb-5 grid gap-3 sm:grid-cols-2">
+                  {SUGGESTIONS.map((s, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        form.setValue("message", s);
+                        form.handleSubmit(onSubmit)();
+                      }}
+                      className="text-left rounded-2xl border border-zinc-700/80 bg-zinc-900/80 px-4 py-3 text-sm text-zinc-200 hover:border-[#C9B68A]/70 hover:bg-zinc-900 transition-colors"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {isClient ? (
                 <>
@@ -237,16 +267,14 @@ export default function Chat() {
                   <Loader2 className="size-4 animate-spin text-zinc-500" />
                 </div>
               )}
-
             </div>
           </div>
         </div>
 
-        {/* ------------------ INPUT BAR ------------------ */}
+        {/* ------------------ INPUT BAR (unchanged) ------------------ */}
         <div className="fixed bottom-0 left-0 right-0 z-50 pb-3">
           <div className="w-full px-5 flex justify-center">
             <div className="relative w-full max-w-3xl">
-
               <div className="pointer-events-none absolute inset-x-8 -top-12 h-20 bg-[radial-gradient(circle_at_top,rgba(201,182,138,0.14),transparent)]" />
 
               <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -302,7 +330,6 @@ export default function Chat() {
                   />
                 </FieldGroup>
               </form>
-
             </div>
           </div>
 
@@ -324,7 +351,6 @@ export default function Chat() {
               </Link>
             </span>
           </div>
-
         </div>
       </main>
     </div>
