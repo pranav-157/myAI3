@@ -33,9 +33,9 @@ export const DATE_AND_TIME = getDateAndTime();
 export const AI_NAME = "Aurelian";
 export const OWNER_NAME = "Pranav Prashant Jain";
 
-export const WELCOME_MESSAGE = `Hello! I'm ${AI_NAME}, your private doorway to effortless luxury. I have been brought to life by ${OWNER_NAME} on 25th November 2025.`
+//export const WELCOME_MESSAGE = `Hello! I'm ${AI_NAME}, your private doorway to effortless luxury. I have been brought to life by ${OWNER_NAME} on 25th November 2025.`
 
-export const CLEAR_CHAT_TEXT = "New";
+export const CLEAR_CHAT_TEXT = "New Query";
 
 export const MODERATION_DENIAL_MESSAGE_SEXUAL = "I can't discuss explicit sexual content. Please ask something else.";
 export const MODERATION_DENIAL_MESSAGE_SEXUAL_MINORS = "I can't discuss content involving minors in a sexual context. Please ask something else.";
