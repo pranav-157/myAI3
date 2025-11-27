@@ -19,7 +19,9 @@ import { AI_NAME, CLEAR_CHAT_TEXT, OWNER_NAME, WELCOME_MESSAGE } from "@/config"
 import Image from "next/image";
 import Link from "next/link";
 
-// ------------------ SCHEMA ------------------
+/* ------------------------------------------------------------
+   SCHEMA
+------------------------------------------------------------ */
 
 const formSchema = z.object({
   message: z
@@ -35,7 +37,9 @@ type StorageData = {
   durations: Record<string, number>;
 };
 
-// ------------------ LOCAL STORAGE ------------------
+/* ------------------------------------------------------------
+   LOCAL STORAGE HELPERS
+------------------------------------------------------------ */
 
 const loadMessagesFromStorage = (): {
   messages: UIMessage[];
@@ -63,6 +67,7 @@ const saveMessagesToStorage = (
   durations: Record<string, number>
 ) => {
   if (typeof window === "undefined") return;
+
   try {
     const data: StorageData = { messages, durations };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -71,12 +76,14 @@ const saveMessagesToStorage = (
   }
 };
 
-// ------------------ MAIN COMPONENT ------------------
+/* ------------------------------------------------------------
+   MAIN CHAT UI COMPONENT
+------------------------------------------------------------ */
 
 export default function Chat() {
   const [isClient, setIsClient] = useState(false);
   const [durations, setDurations] = useState<Record<string, number>>({});
-  const welcomeMessageShownRef = useRef<boolean>(false);
+  const welcomeMessageShownRef = useRef(false);
 
   const stored =
     typeof window !== "undefined"
@@ -99,77 +106,74 @@ export default function Chat() {
     if (isClient) {
       saveMessagesToStorage(messages, durations);
     }
-  }, [durations, messages, isClient]);
+  }, [messages, durations, isClient]);
 
   const handleDurationChange = (key: string, duration: number) => {
-    setDurations((prevDurations) => {
-      const newDurations = { ...prevDurations };
-      newDurations[key] = duration;
-      return newDurations;
-    });
+    setDurations((prev) => ({ ...prev, [key]: duration }));
   };
 
-  // Welcome message injection
+  /* ----------------------------------------------
+     Inject Welcome Message
+  ---------------------------------------------- */
+
   useEffect(() => {
     if (
       isClient &&
       initialMessages.length === 0 &&
       !welcomeMessageShownRef.current
     ) {
-      const welcomeMessage: UIMessage = {
+      const welcomeMsg: UIMessage = {
         id: `welcome-${Date.now()}`,
         role: "assistant",
-        parts: [
-          {
-            type: "text",
-            text: WELCOME_MESSAGE,
-          },
-        ],
+        parts: [{ type: "text", text: WELCOME_MESSAGE }],
       };
 
-      setMessages([welcomeMessage]);
-      saveMessagesToStorage([welcomeMessage], {});
+      setMessages([welcomeMsg]);
+      saveMessagesToStorage([welcomeMsg], {});
       welcomeMessageShownRef.current = true;
     }
   }, [isClient, initialMessages.length, setMessages]);
 
-  // Form handling
+  /* ----------------------------------------------
+     Form handlers
+  ---------------------------------------------- */
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      message: "",
-    },
+    defaultValues: { message: "" },
   });
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
     sendMessage({ text: data.message });
     form.reset();
-  }
+  };
 
-  function clearChat() {
-    const newMessages: UIMessage[] = [];
-    const newDurations: Record<string, number> = {};
-    setMessages(newMessages);
-    setDurations(newDurations);
-    saveMessagesToStorage(newMessages, newDurations);
+  const clearChat = () => {
+    setMessages([]);
+    setDurations({});
+    saveMessagesToStorage([], {});
     toast.success("Chat cleared");
-  }
+  };
 
-  // ------------------ UI ------------------
+  /* ------------------------------------------------------------
+     UI Layout
+  ------------------------------------------------------------ */
 
   return (
     <div className="flex h-screen justify-center items-center font-sans bg-[#050509] text-zinc-100">
       <main className="w-full h-screen relative">
+
         {/* ------------------ HEADER ------------------ */}
         <div className="fixed top-0 left-0 right-0 z-50">
           <div className="mx-auto max-w-4xl px-4">
             <div className="mt-3 rounded-b-2xl border border-zinc-800/70 bg-black/80 backdrop-blur-xl shadow-[0_12px_26px_rgba(0,0,0,0.65)]">
               <ChatHeader>
+
                 <ChatHeaderBlock />
 
                 <ChatHeaderBlock className="flex-col items-center justify-center gap-1">
                   <div className="flex items-center gap-2">
-                    <Avatar className="size-8 ring-1 ring-[#C9B68A]/50">
+                    <Avatar className="size-8 ring-1 ring-[#C9B68A]/70">
                       <AvatarImage src="/logo.png" />
                       <AvatarFallback>
                         <Image
@@ -180,12 +184,13 @@ export default function Chat() {
                         />
                       </AvatarFallback>
                     </Avatar>
+
                     <p className="tracking-tight text-sm font-medium text-zinc-100">
                       {AI_NAME}
                     </p>
                   </div>
 
-                  <p className="uppercase text-[10px] tracking-[0.20em] text-zinc-500">
+                  <p className="uppercase text-[11px] tracking-[0.24em] text-zinc-200 drop-shadow-[0_0_4px_rgba(0,0,0,0.6)]">
                     Quiet Luxury · Travel & Lifestyle Concierge
                   </p>
                 </ChatHeaderBlock>
@@ -201,15 +206,17 @@ export default function Chat() {
                     {CLEAR_CHAT_TEXT}
                   </Button>
                 </ChatHeaderBlock>
+
               </ChatHeader>
             </div>
           </div>
         </div>
 
-        {/* ------------------ CHAT AREA ------------------ */}
+        {/* ------------------ MESSAGE AREA ------------------ */}
         <div className="h-screen overflow-y-auto w-full px-5 pt-[96px] pb-[180px] py-4">
           <div className="flex justify-center min-h-full">
-            <div className="flex flex-col items-stretch justify-end w-full max-w-3xl rounded-3xl bg-black/65 border border-zinc-800/70 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.55)] px-5 py-6">
+            <div className="flex flex-col w-full max-w-3xl rounded-3xl bg-black/65 border border-zinc-800/70 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.55)] px-5 py-6">
+
               {isClient ? (
                 <>
                   <MessageWall
@@ -230,6 +237,7 @@ export default function Chat() {
                   <Loader2 className="size-4 animate-spin text-zinc-500" />
                 </div>
               )}
+
             </div>
           </div>
         </div>
@@ -238,6 +246,7 @@ export default function Chat() {
         <div className="fixed bottom-0 left-0 right-0 z-50 pb-3">
           <div className="w-full px-5 flex justify-center">
             <div className="relative w-full max-w-3xl">
+
               <div className="pointer-events-none absolute inset-x-8 -top-12 h-20 bg-[radial-gradient(circle_at_top,rgba(201,182,138,0.14),transparent)]" />
 
               <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -247,7 +256,9 @@ export default function Chat() {
                     control={form.control}
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel className="sr-only">Message</FieldLabel>
+                        <FieldLabel className="sr-only">
+                          Message
+                        </FieldLabel>
 
                         <div className="relative h-13">
                           <Input
@@ -291,17 +302,18 @@ export default function Chat() {
                   />
                 </FieldGroup>
               </form>
+
             </div>
           </div>
 
           {/* ------------------ FOOTER ------------------ */}
-          <div className="w-full px-5 mt-2 text-[11px] text-zinc-500 flex justify-center">
+          <div className="w-full px-5 mt-2 text-[11px] text-zinc-500 flex justify-center gap-1">
             <span>© {new Date().getFullYear()} {OWNER_NAME}</span>
-            <span className="mx-1">·</span>
+            <span>·</span>
             <Link href="/terms" className="underline underline-offset-2">
               Terms of Use
             </Link>
-            <span className="mx-1">·</span>
+            <span>·</span>
             <span>
               Powered by{" "}
               <Link
@@ -312,6 +324,7 @@ export default function Chat() {
               </Link>
             </span>
           </div>
+
         </div>
       </main>
     </div>
