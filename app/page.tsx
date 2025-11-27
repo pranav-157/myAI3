@@ -23,6 +23,9 @@ import { AI_NAME, CLEAR_CHAT_TEXT, OWNER_NAME, WELCOME_MESSAGE } from "@/config"
 import Image from "next/image";
 import Link from "next/link";
 
+
+// ------------------ SCHEMA ------------------
+
 const formSchema = z.object({
   message: z
     .string()
@@ -36,6 +39,9 @@ type StorageData = {
   messages: UIMessage[];
   durations: Record<string, number>;
 };
+
+
+// ------------------ LOCAL STORAGE ------------------
 
 const loadMessagesFromStorage = (): {
   messages: UIMessage[];
@@ -71,6 +77,9 @@ const saveMessagesToStorage = (
   }
 };
 
+
+// ------------------ MAIN COMPONENT ------------------
+
 export default function Chat() {
   const [isClient, setIsClient] = useState(false);
   const [durations, setDurations] = useState<Record<string, number>>({});
@@ -80,6 +89,7 @@ export default function Chat() {
     typeof window !== "undefined"
       ? loadMessagesFromStorage()
       : { messages: [], durations: {} };
+
   const [initialMessages] = useState<UIMessage[]>(stored.messages);
 
   const { messages, sendMessage, status, stop, setMessages } = useChat({
@@ -106,7 +116,8 @@ export default function Chat() {
     });
   };
 
-  // Inject welcome message on first load
+
+  // Welcome message injection
   useEffect(() => {
     if (
       isClient &&
@@ -130,6 +141,8 @@ export default function Chat() {
     }
   }, [isClient, initialMessages.length, setMessages]);
 
+
+  // Form handling
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -151,58 +164,58 @@ export default function Chat() {
     toast.success("Chat cleared");
   }
 
+
+  // ------------------ UI ------------------
+
   return (
-    <div className="flex h-screen items-center justify-center font-sans bg-gradient-to-br from-[#050509] via-[#050509] to-[#0b0b0f] text-zinc-100">
+    <div className="flex h-screen justify-center items-center font-sans bg-[#050509] text-zinc-100">
       <main className="w-full h-screen relative">
-        {/* HEADER – subtle glass bar */}
+
+        {/* ------------------ HEADER ------------------ */}
         <div className="fixed top-0 left-0 right-0 z-50">
-          <div className="mx-auto max-w-4xl px-4 pt-4">
-            <div className="rounded-2xl border border-zinc-800/70 bg-black/70 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.6)]">
-              <ChatHeader>
-                <ChatHeaderBlock />
+          <ChatHeader className="mx-auto max-w-4xl px-4 py-3 rounded-b-2xl border border-zinc-800/70 bg-black/80 backdrop-blur-xl shadow-[0_12px_26px_rgba(0,0,0,0.65)]">
+            
+            <ChatHeaderBlock />
 
-                <ChatHeaderBlock className="flex-col justify-center items-center gap-1 py-2">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="size-8 ring-1 ring-[#C9B68A]/60">
-                      <AvatarImage src="/logo.png" />
-                      <AvatarFallback>
-                        <Image
-                          src="/logo.png"
-                          alt="Logo"
-                          width={32}
-                          height={32}
-                        />
-                      </AvatarFallback>
-                    </Avatar>
-                    <p className="tracking-tight text-sm font-medium text-zinc-100">
-                      {AI_NAME}
-                    </p>
-                  </div>
-                  <p className="uppercase text-[10px] tracking-[0.20em] text-zinc-500">
-                    Quiet luxury travel & lifestyle concierge
-                  </p>
-                </ChatHeaderBlock>
+            <ChatHeaderBlock className="flex-col items-center justify-center gap-1">
+              <div className="flex items-center gap-2">
+                <Avatar className="size-8 ring-1 ring-[#C9B68A]/50">
+                  <AvatarImage src="/logo.png" />
+                  <AvatarFallback>
+                    <Image src="/logo.png" alt="Logo" width={32} height={32} />
+                  </AvatarFallback>
+                </Avatar>
+                <p className="tracking-tight text-sm font-medium text-zinc-100">
+                  {AI_NAME}
+                </p>
+              </div>
 
-                <ChatHeaderBlock className="justify-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="cursor-pointer border-zinc-700 bg-black/40 hover:bg-zinc-900/70 text-xs text-zinc-200"
-                    onClick={clearChat}
-                  >
-                    <Plus className="size-3 mr-1" />
-                    {CLEAR_CHAT_TEXT}
-                  </Button>
-                </ChatHeaderBlock>
-              </ChatHeader>
-            </div>
-          </div>
+              <p className="uppercase text-[10px] tracking-[0.20em] text-zinc-500">
+                Quiet Luxury · Travel & Lifestyle Concierge
+              </p>
+            </ChatHeaderBlock>
+
+            <ChatHeaderBlock className="justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                className="cursor-pointer border-zinc-700 bg-black/40 hover:bg-zinc-900/70 text-xs text-zinc-200"
+                onClick={clearChat}
+              >
+                <Plus className="size-3 mr-1" />
+                {CLEAR_CHAT_TEXT}
+              </Button>
+            </ChatHeaderBlock>
+
+          </ChatHeader>
         </div>
 
-        {/* MAIN CHAT AREA – centered quiet-luxury card */}
-        <div className="h-screen overflow-y-auto px-5 py-4 w-full pt-[116px] pb-[190px]">
+
+        {/* ------------------ CHAT AREA ------------------ */}
+        <div className="h-screen overflow-y-auto w-full px-5 pt-[96px] pb-[180px] py-4">
           <div className="flex justify-center min-h-full">
-            <div className="flex flex-col items-stretch justify-end w-full max-w-3xl rounded-3xl border border-zinc-800/80 bg-black/60 backdrop-blur-xl shadow-[0_0_40px_rgba(0,0,0,0.7)] px-5 py-6">
+            <div className="flex flex-col items-stretch justify-end w-full max-w-3xl rounded-3xl bg-black/65 border border-zinc-800/70 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.55)] px-5 py-6">
+
               {isClient ? (
                 <>
                   <MessageWall
@@ -211,6 +224,7 @@ export default function Chat() {
                     durations={durations}
                     onDurationChange={handleDurationChange}
                   />
+
                   {status === "submitted" && (
                     <div className="flex justify-start w-full mt-2">
                       <Loader2 className="size-4 animate-spin text-zinc-500" />
@@ -218,42 +232,38 @@ export default function Chat() {
                   )}
                 </>
               ) : (
-                <div className="flex justify-center w-full">
+                <div className="flex justify-center">
                   <Loader2 className="size-4 animate-spin text-zinc-500" />
                 </div>
               )}
+
             </div>
           </div>
         </div>
 
-        {/* INPUT BAR – subtle pill with muted champagne accent */}
-        <div className="fixed bottom-0 left-0 right-0 z-50">
-          <div className="w-full px-5 pt-4 pb-3 flex justify-center">
-            <div className="relative w-full max-w-3xl">
-              {/* soft radial highlight */}
-              <div className="pointer-events-none absolute inset-x-8 -top-10 h-20 bg-[radial-gradient(circle_at_top,rgba(201,182,138,0.16),transparent)]" />
 
-              <form id="chat-form" onSubmit={form.handleSubmit(onSubmit)}>
+        {/* ------------------ INPUT BAR ------------------ */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 pb-3">
+          <div className="w-full px-5 flex justify-center">
+            <div className="relative w-full max-w-3xl">
+
+              <div className="pointer-events-none absolute inset-x-8 -top-12 h-20 bg-[radial-gradient(circle_at_top,rgba(201,182,138,0.14),transparent)]" />
+
+              <form onSubmit={form.handleSubmit(onSubmit)}>
                 <FieldGroup>
                   <Controller
                     name="message"
                     control={form.control}
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel
-                          htmlFor="chat-form-message"
-                          className="sr-only"
-                        >
-                          Message
-                        </FieldLabel>
+                        <FieldLabel className="sr-only">Message</FieldLabel>
+
                         <div className="relative h-13">
                           <Input
                             {...field}
-                            id="chat-form-message"
-                            className="h-13 pr-14 pl-5 bg-black/70 border border-zinc-700/80 rounded-full text-sm placeholder:text-zinc-500 focus-visible:ring-1 focus-visible:ring-[#C9B68A] focus-visible:border-[#C9B68A]"
+                            className="h-13 pr-14 pl-5 bg-zinc-900/95 border border-zinc-700/80 rounded-full text-sm placeholder:text-zinc-500 focus-visible:ring-1 focus-visible:ring-[#C9B68A]/80 focus-visible:border-[#C9B68A]/80"
                             placeholder="Ask Aurelian to design your next experience..."
                             disabled={status === "streaming"}
-                            aria-invalid={fieldState.invalid}
                             autoComplete="off"
                             onKeyDown={(e) => {
                               if (e.key === "Enter" && !e.shiftKey) {
@@ -265,7 +275,7 @@ export default function Chat() {
 
                           {(status === "ready" || status === "error") && (
                             <Button
-                              className="absolute right-2 top-2 rounded-full size-9 bg-[#C9B68A] text-black shadow-[0_0_18px_rgba(0,0,0,0.45)] hover:bg-[#d7c491] disabled:opacity-40"
+                              className="absolute right-2 top-2 size-9 rounded-full bg-[#C9B68A] text-black shadow-[0_0_18px_rgba(0,0,0,0.45)] hover:bg-[#d7c491]"
                               type="submit"
                               disabled={!field.value.trim()}
                               size="icon"
@@ -274,15 +284,12 @@ export default function Chat() {
                             </Button>
                           )}
 
-                          {(status === "streaming" ||
-                            status === "submitted") && (
+                          {(status === "submitted" || status === "streaming") && (
                             <Button
-                              className="absolute right-2 top-2 rounded-full size-9 border border-zinc-600 bg-black/70 hover:bg-zinc-900"
-                              size="icon"
+                              className="absolute right-2 top-2 size-9 rounded-full border border-zinc-600 bg-black/70 hover:bg-zinc-900"
                               type="button"
-                              onClick={() => {
-                                stop();
-                              }}
+                              size="icon"
+                              onClick={() => stop()}
                             >
                               <Square className="size-4 text-zinc-200" />
                             </Button>
@@ -296,29 +303,24 @@ export default function Chat() {
             </div>
           </div>
 
-          {/* FOOTER */}
-          <div className="w-full px-5 pb-3 flex justify-center text-[11px] text-zinc-500">
-            <span>
-              © {new Date().getFullYear()} {OWNER_NAME} ·{" "}
-            </span>
-            <Link
-              href="/terms"
-              className="underline underline-offset-2 mx-1"
-            >
+
+          {/* ------------------ FOOTER ------------------ */}
+          <div className="w-full px-5 mt-2 text-[11px] text-zinc-500 flex justify-center">
+            <span>© {new Date().getFullYear()} {OWNER_NAME}</span>
+            <span className="mx-1">·</span>
+            <Link href="/terms" className="underline underline-offset-2">
               Terms of Use
             </Link>
             <span className="mx-1">·</span>
             <span>
               Powered by{" "}
-              <Link
-                href="https://ringel.ai/"
-                className="underline underline-offset-2"
-              >
+              <Link href="https://ringel.ai/" className="underline underline-offset-2">
                 Ringel.AI
               </Link>
             </span>
           </div>
         </div>
+
       </main>
     </div>
   );
