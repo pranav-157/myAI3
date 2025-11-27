@@ -4,7 +4,7 @@ import { tool } from "ai";
 import { z } from "zod";
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY!,
 });
 
 export const generateImage = tool({
@@ -19,9 +19,28 @@ export const generateImage = tool({
       .describe("Image size.")
       .optional(),
   }),
-  execute: async ({ prompt, size }: { prompt: string; size?: "1024x1024" | "512x512" }) => {
+  async execute({
+    prompt,
+    size,
+  }: {
+    prompt: string;
+    size?: "1024x1024" | "512x512";
+  }) {
     const response = await openai.images.generate({
       model: "gpt-image-1",
       prompt,
       size: size ?? "1024x1024",
       n: 1,
+    });
+
+    const url = response.data[0]?.url;
+    if (!url) {
+      throw new Error("No image URL returned from OpenAI.");
+    }
+
+    // The tool result the model will see
+    return {
+      imageUrl: url,
+    };
+  },
+});
