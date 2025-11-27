@@ -15,148 +15,121 @@ import { ChatHeader, ChatHeaderBlock } from "@/app/parts/chat-header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UIMessage } from "ai";
 import { useEffect, useState, useRef } from "react";
-import { AI_NAME, CLEAR_CHAT_TEXT, OWNER_NAME, WELCOME_MESSAGE } from "@/config";
+import {
+  AI_NAME,
+  CLEAR_CHAT_TEXT,
+  OWNER_NAME,
+  WELCOME_MESSAGE,
+} from "@/config";
 import Image from "next/image";
 import Link from "next/link";
 
 /* ------------------------------------------------------------
-   SCHEMA
+   Schema
 ------------------------------------------------------------ */
 
 const formSchema = z.object({
-  message: z
-    .string()
-    .min(1, "Message cannot be empty.")
-    .max(2000, "Message must be at most 2000 characters."),
+  message: z.string().min(1).max(2000),
 });
 
 const STORAGE_KEY = "chat-messages";
 
-type StorageData = {
-  messages: UIMessage[];
-  durations: Record<string, number>;
-};
-
 /* ------------------------------------------------------------
-   SUGGESTED PROMPTS (for empty-state cards)
+   Suggested prompts
 ------------------------------------------------------------ */
 
-const SUGGESTIONS: string[] = [
-  "Plan a 3-day quiet-luxury stay in Jaipur with one palace hotel and one boutique property.",
-  "Curate 3 hotel + outfit pairings for a business trip to Mumbai with evening cocktails.",
-  "Design a weekend escape within 2 hours of Delhi with a private pool and late checkout.",
-  "Suggest 4 dinner spots in Jaipur that feel intimate, not touristy, with great wine lists.",
+const SUGGESTIONS = [
+  "Plan a 3-day quiet-luxury trip in Jaipur with two hotel options",
+  "Create a luxury weekend in Udaipur with one palace hotel",
+  "Find a private-pool villa within 2 hours of Delhi",
+  "Recommend boutique hotels in Goa that feel intimate, not touristy",
 ];
 
 /* ------------------------------------------------------------
-   LOCAL STORAGE HELPERS
+   Storage helpers
 ------------------------------------------------------------ */
 
-const loadMessagesFromStorage = (): {
-  messages: UIMessage[];
-  durations: Record<string, number>;
-} => {
-  if (typeof window === "undefined") return { messages: [], durations: {} };
+const loadMessagesFromStorage = () => {
+  if (typeof window === "undefined")
+    return { messages: [], durations: {} };
 
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return { messages: [], durations: {} };
-
-    const parsed = JSON.parse(stored);
-    return {
-      messages: parsed.messages || [],
-      durations: parsed.durations || {},
-    };
-  } catch (error) {
-    console.error("Failed to load messages from localStorage:", error);
+    return JSON.parse(stored);
+  } catch {
     return { messages: [], durations: {} };
   }
 };
 
-const saveMessagesToStorage = (
-  messages: UIMessage[],
-  durations: Record<string, number>
-) => {
+const saveMessagesToStorage = (messages, durations) => {
   if (typeof window === "undefined") return;
-
-  try {
-    const data: StorageData = { messages, durations };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch (error) {
-    console.error("Failed to save messages to localStorage:", error);
-  }
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ messages, durations })
+  );
 };
 
 /* ------------------------------------------------------------
-   MAIN CHAT UI COMPONENT
+   Main Component
 ------------------------------------------------------------ */
 
 export default function Chat() {
   const [isClient, setIsClient] = useState(false);
-  const [durations, setDurations] = useState<Record<string, number>>({});
-  const welcomeMessageShownRef = useRef(false);
+  const [durations, setDurations] = useState({});
+  const welcomeShown = useRef(false);
 
-  const stored =
-    typeof window !== "undefined"
-      ? loadMessagesFromStorage()
-      : { messages: [], durations: {} };
-
-  const [initialMessages] = useState<UIMessage[]>(stored.messages);
+  const stored = loadMessagesFromStorage();
+  const [initialMessages] = useState(stored.messages || []);
 
   const { messages, sendMessage, status, stop, setMessages } = useChat({
     messages: initialMessages,
   });
 
-  useEffect(() => {
-    setIsClient(true);
-    setDurations(stored.durations);
-    setMessages(stored.messages);
-  }, []);
-
-  useEffect(() => {
-    if (isClient) {
-      saveMessagesToStorage(messages, durations);
-    }
-  }, [messages, durations, isClient]);
-
-  const handleDurationChange = (key: string, duration: number) => {
-    setDurations((prev) => ({ ...prev, [key]: duration }));
-  };
-
   const hasUserMessage = messages.some((m) => m.role === "user");
 
-  /* ----------------------------------------------
-     Inject Welcome Message
-  ---------------------------------------------- */
+  /* Initialize client + restore */
+  useEffect(() => {
+    setIsClient(true);
+    setDurations(stored.durations || {});
+    setMessages(stored.messages || []);
+  }, []);
 
+  /* Persist */
+  useEffect(() => {
+    if (isClient) saveMessagesToStorage(messages, durations);
+  }, [messages, durations, isClient]);
+
+  /* Track durations */
+  const handleDurationChange = (k, v) =>
+    setDurations((p) => ({ ...p, [k]: v }));
+
+  /* Welcome message */
   useEffect(() => {
     if (
       isClient &&
       initialMessages.length === 0 &&
-      !welcomeMessageShownRef.current
+      !welcomeShown.current
     ) {
-      const welcomeMsg: UIMessage = {
-        id: `welcome-${Date.now()}`,
+      const msg = {
+        id: "welcome-" + Date.now(),
         role: "assistant",
         parts: [{ type: "text", text: WELCOME_MESSAGE }],
       };
 
-      setMessages([welcomeMsg]);
-      saveMessagesToStorage([welcomeMsg], {});
-      welcomeMessageShownRef.current = true;
+      setMessages([msg]);
+      saveMessagesToStorage([msg], {});
+      welcomeShown.current = true;
     }
   }, [isClient, initialMessages.length, setMessages]);
 
-  /* ----------------------------------------------
-     Form handlers
-  ---------------------------------------------- */
-
-  const form = useForm<z.infer<typeof formSchema>>({
+  /* Form */
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: { message: "" },
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
+  const onSubmit = (data) => {
     sendMessage({ text: data.message });
     form.reset();
   };
@@ -169,17 +142,25 @@ export default function Chat() {
   };
 
   /* ------------------------------------------------------------
-     UI Layout
+     UI
   ------------------------------------------------------------ */
 
   return (
     <div className="flex h-screen justify-center items-center font-sans bg-[#050509] text-zinc-100">
       <main className="w-full h-screen relative">
 
-        {/* ------------------ HEADER ------------------ */}
+        {/* HEADER */}
         <div className="fixed top-0 left-0 right-0 z-50">
           <div className="mx-auto max-w-4xl px-4">
-            <div className="mt-3 rounded-b-2xl border border-zinc-800/70 bg-black/80 backdrop-blur-xl shadow-[0_12px_26px_rgba(0,0,0,0.65)]">
+            <div
+              className="
+                mt-3 rounded-b-2xl
+                bg-gradient-to-b from-[#1E1D1C]/95 to-[#131211]/95
+                border border-zinc-800/70
+                backdrop-blur-2xl
+                shadow-[0_10px_40px_rgba(0,0,0,0.55)]
+              "
+            >
               <ChatHeader>
                 <ChatHeaderBlock />
 
@@ -197,13 +178,21 @@ export default function Chat() {
                       </AvatarFallback>
                     </Avatar>
 
-                    <p className="tracking-tight text-sm font-medium text-zinc-100">
+                    <p className="text-sm font-medium tracking-tight text-zinc-100">
                       {AI_NAME}
                     </p>
                   </div>
 
-                  <p className="uppercase text-[10px] md:text-[11px] tracking-[0.16em] md:tracking-[0.22em] text-zinc-200 drop-shadow-[0_0_4px_rgba(0,0,0,0.6)] whitespace-nowrap md:whitespace-normal text-center">
-                    Quiet Luxury · Travel & Lifestyle Concierge
+                  <p
+                    className="
+                      uppercase text-[11px]
+                      tracking-[0.22em]
+                      text-zinc-200 
+                      drop-shadow-[0_0_4px_rgba(0,0,0,0.6)]
+                      whitespace-pre text-center
+                    "
+                  >
+                    QUIET LUXURY · TRAVEL & LIFESTYLE CONCIERGE
                   </p>
                 </ChatHeaderBlock>
 
@@ -223,12 +212,21 @@ export default function Chat() {
           </div>
         </div>
 
-        {/* ------------------ MESSAGE AREA ------------------ */}
+        {/* CHAT AREA */}
         <div className="h-screen overflow-y-auto w-full px-5 pt-[96px] pb-[180px] py-4">
           <div className="flex justify-center min-h-full">
-            <div className="flex flex-col w-full max-w-3xl rounded-3xl bg-black/65 border border-zinc-800/70 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.55)] px-5 py-6">
-
-              {/* Suggested cards only before the first user message */}
+            <div
+              className="
+                flex flex-col w-full max-w-3xl
+                rounded-3xl
+                bg-[#050506]/95
+                border border-zinc-800/70
+                backdrop-blur-xl
+                shadow-[0_0_30px_rgba(0,0,0,0.55)]
+                px-5 py-6
+              "
+            >
+              {/* Suggested prompts (empty state) */}
               {!hasUserMessage && (
                 <div className="mb-5 grid gap-3 sm:grid-cols-2">
                   {SUGGESTIONS.map((s, i) => (
@@ -239,7 +237,15 @@ export default function Chat() {
                         form.setValue("message", s);
                         form.handleSubmit(onSubmit)();
                       }}
-                      className="text-left rounded-2xl border border-zinc-700/80 bg-zinc-900/80 px-4 py-3 text-sm text-zinc-200 hover:border-[#C9B68A]/70 hover:bg-zinc-900 transition-colors"
+                      className="
+                        text-left rounded-2xl 
+                        border border-zinc-700/80 
+                        bg-zinc-900/80 px-4 py-3 
+                        text-sm text-zinc-200 
+                        hover:border-[#C9B68A]/70 
+                        hover:bg-zinc-900 
+                        transition-colors
+                      "
                     >
                       {s}
                     </button>
@@ -247,6 +253,7 @@ export default function Chat() {
                 </div>
               )}
 
+              {/* Messages */}
               {isClient ? (
                 <>
                   <MessageWall
@@ -254,10 +261,16 @@ export default function Chat() {
                     status={status}
                     durations={durations}
                     onDurationChange={handleDurationChange}
+                    bubbleClassName="
+                      inline-flex items-center justify-center
+                      bg-zinc-800 text-zinc-300 
+                      rounded-full w-4 h-4 text-[10px]
+                      border border-zinc-700/70
+                    "
                   />
 
                   {status === "submitted" && (
-                    <div className="flex justify-start w-full mt-2">
+                    <div className="flex justify-start mt-2">
                       <Loader2 className="size-4 animate-spin text-zinc-500" />
                     </div>
                   )}
@@ -271,7 +284,7 @@ export default function Chat() {
           </div>
         </div>
 
-        {/* ------------------ INPUT BAR (unchanged) ------------------ */}
+        {/* INPUT BAR — unchanged */}
         <div className="fixed bottom-0 left-0 right-0 z-50 pb-3">
           <div className="w-full px-5 flex justify-center">
             <div className="relative w-full max-w-3xl">
@@ -291,7 +304,15 @@ export default function Chat() {
                         <div className="relative h-13">
                           <Input
                             {...field}
-                            className="h-13 pr-14 pl-5 bg-zinc-900/95 border border-zinc-700/80 rounded-full text-sm placeholder:text-zinc-500 focus-visible:ring-1 focus-visible:ring-[#C9B68A]/80 focus-visible:border-[#C9B68A]/80"
+                            className="
+                              h-13 pr-14 pl-5 bg-zinc-900/95 
+                              border border-zinc-700/80 
+                              rounded-full text-sm 
+                              placeholder:text-zinc-500
+                              focus-visible:ring-1 
+                              focus-visible:ring-[#C9B68A]/80 
+                              focus-visible:border-[#C9B68A]/80
+                            "
                             placeholder="Ask Aurelian to design your next experience..."
                             disabled={status === "streaming"}
                             autoComplete="off"
@@ -303,9 +324,15 @@ export default function Chat() {
                             }}
                           />
 
-                          {(status === "ready" || status === "error") && (
+                          {(status === "ready" ||
+                            status === "error") && (
                             <Button
-                              className="absolute right-2 top-2 size-9 rounded-full bg-[#C9B68A] text-black shadow-[0_0_18px_rgba(0,0,0,0.45)] hover:bg-[#d7c491]"
+                              className="
+                                absolute right-2 top-2 size-9 rounded-full 
+                                bg-[#C9B68A] text-black 
+                                shadow-[0_0_18px_rgba(0,0,0,0.45)]
+                                hover:bg-[#d7c491]
+                              "
                               type="submit"
                               disabled={!field.value.trim()}
                               size="icon"
@@ -314,9 +341,14 @@ export default function Chat() {
                             </Button>
                           )}
 
-                          {(status === "submitted" || status === "streaming") && (
+                          {(status === "submitted" ||
+                            status === "streaming") && (
                             <Button
-                              className="absolute right-2 top-2 size-9 rounded-full border border-zinc-600 bg-black/70 hover:bg-zinc-900"
+                              className="
+                                absolute right-2 top-2 size-9 rounded-full 
+                                border border-zinc-600 
+                                bg-black/70 hover:bg-zinc-900
+                              "
                               type="button"
                               size="icon"
                               onClick={() => stop()}
@@ -333,7 +365,7 @@ export default function Chat() {
             </div>
           </div>
 
-          {/* ------------------ FOOTER ------------------ */}
+          {/* FOOTER */}
           <div className="w-full px-5 mt-2 text-[11px] text-zinc-500 flex justify-center gap-1">
             <span>© {new Date().getFullYear()} {OWNER_NAME}</span>
             <span>·</span>
