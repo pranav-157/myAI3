@@ -34,11 +34,18 @@ const formSchema = z.object({
 
 const STORAGE_KEY = "chat-messages";
 
+type DurationsMap = Record<string, number>;
+
+type StoragePayload = {
+  messages: UIMessage[];
+  durations: DurationsMap;
+};
+
 /* ------------------------------------------------------------
    Suggested prompts
 ------------------------------------------------------------ */
 
-const SUGGESTIONS = [
+const SUGGESTIONS: string[] = [
   "Plan a 3-day quiet-luxury trip in Jaipur with two hotel options",
   "Create a luxury weekend in Udaipur with one palace hotel",
   "Find a private-pool villa within 2 hours of Delhi",
@@ -49,25 +56,40 @@ const SUGGESTIONS = [
    Storage helpers
 ------------------------------------------------------------ */
 
-const loadMessagesFromStorage = () => {
-  if (typeof window === "undefined")
+const loadMessagesFromStorage = (): StoragePayload => {
+  if (typeof window === "undefined") {
     return { messages: [], durations: {} };
+  }
 
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return { messages: [], durations: {} };
-    return JSON.parse(stored);
-  } catch {
+    if (!stored) {
+      return { messages: [], durations: {} };
+    }
+
+    const parsed = JSON.parse(stored) as Partial<StoragePayload>;
+    return {
+      messages: parsed.messages ?? [],
+      durations: parsed.durations ?? {},
+    };
+  } catch (error) {
+    console.error("Failed to load messages from localStorage:", error);
     return { messages: [], durations: {} };
   }
 };
 
-const saveMessagesToStorage = (messages, durations) => {
+const saveMessagesToStorage = (
+  messages: UIMessage[],
+  durations: DurationsMap
+): void => {
   if (typeof window === "undefined") return;
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify({ messages, durations })
-  );
+
+  try {
+    const payload: StoragePayload = { messages, durations };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  } catch (error) {
+    console.error("Failed to save messages to localStorage:", error);
+  }
 };
 
 /* ------------------------------------------------------------
@@ -76,11 +98,11 @@ const saveMessagesToStorage = (messages, durations) => {
 
 export default function Chat() {
   const [isClient, setIsClient] = useState(false);
-  const [durations, setDurations] = useState({});
-  const welcomeShown = useRef(false);
+  const [durations, setDurations] = useState<DurationsMap>({});
+  const welcomeShown = useRef<boolean>(false);
 
   const stored = loadMessagesFromStorage();
-  const [initialMessages] = useState(stored.messages || []);
+  const [initialMessages] = useState<UIMessage[]>(stored.messages);
 
   const { messages, sendMessage, status, stop, setMessages } = useChat({
     messages: initialMessages,
@@ -91,18 +113,22 @@ export default function Chat() {
   /* Initialize client + restore */
   useEffect(() => {
     setIsClient(true);
-    setDurations(stored.durations || {});
-    setMessages(stored.messages || []);
+    setDurations(stored.durations);
+    setMessages(stored.messages);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* Persist */
   useEffect(() => {
-    if (isClient) saveMessagesToStorage(messages, durations);
+    if (isClient) {
+      saveMessagesToStorage(messages as UIMessage[], durations);
+    }
   }, [messages, durations, isClient]);
 
   /* Track durations */
-  const handleDurationChange = (k, v) =>
-    setDurations((p) => ({ ...p, [k]: v }));
+  const handleDurationChange = (key: string, value: number) => {
+    setDurations((prev) => ({ ...prev, [key]: value }));
+  };
 
   /* Welcome message */
   useEffect(() => {
@@ -111,8 +137,8 @@ export default function Chat() {
       initialMessages.length === 0 &&
       !welcomeShown.current
     ) {
-      const msg = {
-        id: "welcome-" + Date.now(),
+      const msg: UIMessage = {
+        id: "welcome-" + Date.now().toString(),
         role: "assistant",
         parts: [{ type: "text", text: WELCOME_MESSAGE }],
       };
@@ -124,12 +150,12 @@ export default function Chat() {
   }, [isClient, initialMessages.length, setMessages]);
 
   /* Form */
-  const form = useForm({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { message: "" },
   });
 
-  const onSubmit = (data) => {
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
     sendMessage({ text: data.message });
     form.reset();
   };
@@ -148,7 +174,6 @@ export default function Chat() {
   return (
     <div className="flex h-screen justify-center items-center font-sans bg-[#050509] text-zinc-100">
       <main className="w-full h-screen relative">
-
         {/* HEADER */}
         <div className="fixed top-0 left-0 right-0 z-50">
           <div className="mx-auto max-w-4xl px-4">
@@ -229,9 +254,9 @@ export default function Chat() {
               {/* Suggested prompts (empty state) */}
               {!hasUserMessage && (
                 <div className="mb-5 grid gap-3 sm:grid-cols-2">
-                  {SUGGESTIONS.map((s, i) => (
+                  {SUGGESTIONS.map((s) => (
                     <button
-                      key={i}
+                      key={s}
                       type="button"
                       onClick={() => {
                         form.setValue("message", s);
@@ -261,12 +286,6 @@ export default function Chat() {
                     status={status}
                     durations={durations}
                     onDurationChange={handleDurationChange}
-                    bubbleClassName="
-                      inline-flex items-center justify-center
-                      bg-zinc-800 text-zinc-300 
-                      rounded-full w-4 h-4 text-[10px]
-                      border border-zinc-700/70
-                    "
                   />
 
                   {status === "submitted" && (
@@ -324,8 +343,7 @@ export default function Chat() {
                             }}
                           />
 
-                          {(status === "ready" ||
-                            status === "error") && (
+                          {(status === "ready" || status === "error") && (
                             <Button
                               className="
                                 absolute right-2 top-2 size-9 rounded-full 
@@ -341,8 +359,7 @@ export default function Chat() {
                             </Button>
                           )}
 
-                          {(status === "submitted" ||
-                            status === "streaming") && (
+                          {(status === "submitted" || status === "streaming") && (
                             <Button
                               className="
                                 absolute right-2 top-2 size-9 rounded-full 
